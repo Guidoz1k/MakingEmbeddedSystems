@@ -1,0 +1,8 @@
+.settings/
+.cproject
+Debug/
+Drivers/
+.mxproject
+.project
+STM32H743VITX_FLASH.ld
+STM32H743VITX_RAM.ld
