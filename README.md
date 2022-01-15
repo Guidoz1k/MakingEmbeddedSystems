@@ -1,6 +1,13 @@
-# Making Embedded Systems
+# Final Project folder
 
-This is my repository for lessons and final assignment of the [Making Embedded Systems course](https://classpert.com/classpertx/cohorts/making-embedded-systems) which I had the great opportunity to participate in it's first cohort, named Red Jellies :octopus:
-The course is hosted by Elecia White, embedded engineer, host of the [Embedded.fm Podcast](https://embedded.fm/) and writer of the Making Embedded Systems book, book which is the main source material of the MES course.
+This is the folder of the final project! It consists of a prototype of my bachelor's final work: An audio tester. It should have a display, buttons and an enconder for UI and a DAC for the output. The idea is simple: To test what waveforms and harmonics sounds nice.
 
-![course cover](https://i.imgur.com/deandZm.png)
+TODO LIST:
+- [x] blink a LED to test the HAL
+- [ ] Implement the state machine and scheduler structures
+- [ ] Implement the LCD interface
+- [ ] Implement the buttons functionalies
+- [ ] Implement the encoder functionalies
+- [ ] Implement the DAC functionalities
+- [ ] Implement the state machine and scheduler
+- [ ] test
