@@ -4,10 +4,11 @@ This is the folder of the final project! It consists of a prototype of my bachel
 
 TODO LIST:
 - [x] blink a LED to test the HAL
-- [ ] Implement the state machine and scheduler structures
 - [ ] Implement the LCD interface
 - [ ] Implement the buttons functionalies
-- [ ] Implement the encoder functionalies
+- [ ] Implement the soft-potentiometer functionalies
+- [ ] Implement the state machine and scheduler structures
 - [ ] Implement the DAC functionalities
 - [ ] Implement the state machine and scheduler
 - [ ] test
+- [ ] UI and menus
