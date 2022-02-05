@@ -10,10 +10,11 @@
 float LUTf[LUTSIZE];
 uint32_t LUTi[LUTSIZE];
 
-float ranger(uint32_t range){
+float disc_sine(uint32_t range){
 	float value = 0;
 
 	value = (((range / (999.5)) * M_PI) - M_PI);
+	value = sin(value);
 
 	return value;
 }
@@ -22,8 +23,8 @@ void init_lut(void){
 	uint32_t counter = 0;
 
 	for(counter = 0; counter < LUTSIZE; counter++){
-		LUTf[counter] = sin(ranger(counter));
-		LUTi[counter] = (uint32_t)(LUTRANGE*(sin(ranger(counter)) + 1));
+		LUTf[counter] = disc_sine(counter);
+		LUTi[counter] = (uint32_t)(LUTRANGE*(disc_sine(counter) + 1));
 	}
 }
 
