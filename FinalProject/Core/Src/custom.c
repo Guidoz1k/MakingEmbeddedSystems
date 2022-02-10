@@ -24,7 +24,20 @@
 #define	BUT_RGT	GPIOE,GPIO_PIN_4	// PE04 = RIGHT button
 #define	BUT_LFT	GPIOE,GPIO_PIN_5	// PE05 = LEFT button
 
-static uint32_t buttons = 0;
+static ADC_HandleTypeDef hadc1;
+static I2S_HandleTypeDef hi2s1;
+
+// 88 keys of a piano
+static uint32_t tone[] = {
+							  27,   29,   31,   33,   35,   37,   39,   41,   44,   46,   49,   52,
+							  55,   58,   62,   65,   69,   73,   78,   82,   87,   92,   98,  104,
+							 110,  117,  123,  131,  139,  147,  156,  165,  175,  185,  196,  208,
+							 220,  233,  247,  262,  277,  294,  311,  330,  349,  370,  392,  415,
+							 440,  466,  494,  523,  554,  587,  622,  659,  698,  740,  784,  830,
+							 880,  932,  988, 1046, 1109, 1175, 1244, 1318, 1397, 1480, 1568, 1661,
+							1760, 1865, 1975, 2093, 2218, 2349, 2489, 2637, 2794, 2960, 3136, 3322,
+							3520, 3729, 3951, 4186
+};
 
 //////////////////////////////////////////////////////////////////////// LCD "ll" functions
 
@@ -180,46 +193,43 @@ void lcd_string(const char *pointer, uint32_t line, uint32_t pos){
 		lcd_write(*(pointer++));
 }
 
+//////////////////////////////////////////////////////////////////////// hal abstraction
+
+void delay(uint32_t time){
+	HAL_Delay(time);
+}
+
+uint32_t adc(){
+	uint32_t average = 50;
+	uint32_t counter = 0;
+	int32_t value = 0;
+
+	for(counter = 0; counter < average; counter++){
+		HAL_ADC_Start(&hadc1);
+		HAL_ADC_PollForConversion(&hadc1, 1);
+		value += HAL_ADC_GetValue(&hadc1);
+		HAL_ADC_Stop(&hadc1);
+	}
+
+	value /= (average * 2420);	// value ranges from 27 to 2
+	value -= 2;					// value ranges from 25 to 0
+
+	return value;
+}
+
 //////////////////////////////////////////////////////////////////////// main functions
 
-void customSetup(void){
+void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	//uint8_t aux = 0;
 
+	hadc1 = handler1;
+	hi2s1 = handler2;
 	lcd_init();
-	HAL_Delay(500);
-
 }
 
 void customLoop(void){
-	buttons = 0;
+	uint32_t buttons = 0;
 
-	if(HAL_GPIO_ReadPin(BUT_UP))
-		buttons++;
-	if(HAL_GPIO_ReadPin(BUT_DWN))
-		buttons++;
-	if(HAL_GPIO_ReadPin(BUT_LFT))
-		buttons++;
-	if(HAL_GPIO_ReadPin(BUT_RGT))
-		buttons++;
-
-	if(buttons == 1){
-		if(HAL_GPIO_ReadPin(BUT_UP))
-			lcd_string("UP             ", 0, 0);
-		if(HAL_GPIO_ReadPin(BUT_DWN))
-			lcd_string("DOWN           ", 0, 0);
-		if(HAL_GPIO_ReadPin(BUT_LFT))
-			lcd_string("LEFT           ", 0, 0);
-		if(HAL_GPIO_ReadPin(BUT_RGT))
-			lcd_string("RIGHT          ", 0, 0);
-	}
-	else
-		if(buttons == 0)
-			lcd_string("me aperta vai", 0, 0);
-		else
-			lcd_string("para com isso", 0, 0);
-
-
-	HAL_Delay(100);
 }
 
 

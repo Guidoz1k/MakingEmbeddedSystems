@@ -6,7 +6,7 @@ TODO LIST:
 - [x] blink a LED to test the HAL
 - [x] Implement the LCD interface
 - [x] Implement the buttons functionalies
-- [ ] Implement the soft-potentiometer functionalies
+- [x] Implement the soft-potentiometer functionalies
 - [ ] Implement the UI state machine and structures
 - [ ] Implement the DAC functionalities with interruptions
 - [ ] Implement the mini DDS engine

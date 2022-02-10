@@ -94,7 +94,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-  customSetup();
+  customSetup(hadc1, hi2s1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

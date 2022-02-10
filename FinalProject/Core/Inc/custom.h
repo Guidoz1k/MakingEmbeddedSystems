@@ -5,6 +5,6 @@
 
 void customLoop(void);
 
-void customSetup(void);
+void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2);
 
 #endif /* __CUSTOM_H */
