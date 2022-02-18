@@ -7,4 +7,8 @@ void customLoop(void);
 
 void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2);
 
+void customButtonInterrupt(void);
+
+void customTimerInterrupt(void);
+
 #endif /* __CUSTOM_H */

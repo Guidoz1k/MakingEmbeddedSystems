@@ -24,6 +24,8 @@
 #define	BUT_RGT	GPIOE,GPIO_PIN_4	// PE04 = RIGHT button
 #define	BUT_LFT	GPIOE,GPIO_PIN_5	// PE05 = LEFT button
 
+#define BUT_K2	GPIOC,GPIO_PIN_5	// PC05 = K2 onboard button
+
 static ADC_HandleTypeDef hadc1;
 static I2S_HandleTypeDef hi2s1;
 
@@ -39,23 +41,29 @@ static uint32_t tone[] = {
 							3520, 3729, 3951, 4186
 };
 
+// LUT
+static uint16_t LUT[] = {
+							65000,
+							0
+};
+
 //////////////////////////////////////////////////////////////////////// LCD "ll" functions
 
-void lcd_e(uint8_t status){
+static void lcd_e(uint8_t status){
     if(status)
         HAL_GPIO_WritePin(LCD_EN, GPIO_PIN_SET);
     else
         HAL_GPIO_WritePin(LCD_EN, GPIO_PIN_RESET);
 }
 
-void lcd_rs(uint8_t status){
+static void lcd_rs(uint8_t status){
     if(status)
     	HAL_GPIO_WritePin(LCD_RS, GPIO_PIN_SET);
     else
     	HAL_GPIO_WritePin(LCD_RS, GPIO_PIN_RESET);
 }
 
-void lcd_data(uint8_t data){
+static void lcd_data(uint8_t data){
     if(data & (1 << 0))
     	HAL_GPIO_WritePin(LCD_D0, GPIO_PIN_SET);
     else
@@ -97,13 +105,13 @@ void lcd_data(uint8_t data){
     	HAL_GPIO_WritePin(LCD_D7, GPIO_PIN_RESET);
 }
 
-void lcd_clear(void){
+static void lcd_clear(void){
 	HAL_GPIO_WritePin(LCD_RS, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LCD_EN, GPIO_PIN_RESET);
     lcd_data(0);
 }
 
-void lcd_enable(void){
+static void lcd_enable(void){
     lcd_e(0);
     HAL_Delay(1);
     lcd_e(1);
@@ -112,28 +120,28 @@ void lcd_enable(void){
     HAL_Delay(1);
 }
 
-void lcd_config(uint8_t data){
+static void lcd_config(uint8_t data){
     lcd_rs(0);
     lcd_data(data);
     lcd_enable();
     lcd_clear();
 }
 
-void lcd_write(uint8_t data){
+static void lcd_write(uint8_t data){
     lcd_rs(1);
     lcd_data(data);
     lcd_enable();
     lcd_clear();
 }
 
-void lcd_pos(uint8_t line, uint8_t pos){
+static void lcd_pos(uint8_t line, uint8_t pos){
     if(line)            // display second line
         pos |= 0x40;    // pos 0 of second line is mem pos 0x40
     pos |= 0x80;        // config bit set
     lcd_config(pos);
 }
 
-void lcd_flush(void){
+static void lcd_flush(void){
     lcd_rs(0);
     lcd_data(1);    // data = 0x01
     lcd_enable();
@@ -141,7 +149,7 @@ void lcd_flush(void){
     lcd_clear();
 }
 
-void lcd_init(void){
+static void lcd_init(void){
     lcd_config(0x06);   // display automatic cursor increment
     lcd_config(0x0C);   // active display with hidden cursor
     lcd_config(0x38);   // bit and pixel format
@@ -151,7 +159,7 @@ void lcd_init(void){
 
 //////////////////////////////////////////////////////////////////////// LCD "hal" functions
 
-void lcd_number(uint32_t number, uint32_t size, uint32_t line, uint32_t pos){
+static void lcd_number(uint32_t number, uint32_t size, uint32_t line, uint32_t pos){
 	uint32_t character = 0;
 	uint32_t ten = 0;
 	uint32_t i, j;
@@ -185,7 +193,7 @@ instead of doing
 	}
 }
 
-void lcd_string(const char *pointer, uint32_t line, uint32_t pos){
+static void lcd_string(const char *pointer, uint32_t line, uint32_t pos){
 	uint32_t counter = 0;
 
 	lcd_pos(line, pos);
@@ -195,11 +203,11 @@ void lcd_string(const char *pointer, uint32_t line, uint32_t pos){
 
 //////////////////////////////////////////////////////////////////////// hal abstraction
 
-void delay(uint32_t time){
+static void delay(uint32_t time){
 	HAL_Delay(time);
 }
 
-uint32_t adc(){
+static uint32_t adc(){
 	uint32_t average = 50;
 	uint32_t counter = 0;
 	int32_t value = 0;
@@ -217,7 +225,30 @@ uint32_t adc(){
 	return value;
 }
 
+static void i2s(uint16_t right, uint16_t left){
+	uint16_t buffer[2] = {right, left};
+
+	HAL_I2S_Transmit(&hi2s1, buffer, 2, 0);
+}
+
 //////////////////////////////////////////////////////////////////////// main functions
+
+void customButtonInterrupt(void){
+	static uint32_t state = 0;
+
+	HAL_GPIO_WritePin(LED, state);
+	state ^= 1;
+
+}
+
+void customTimerInterrupt(void){
+	static uint32_t counter = 0;
+
+	i2s(LUT[counter++], 0);
+
+	if(counter > 1)
+		counter = 0;
+}
 
 void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	//uint8_t aux = 0;
@@ -225,11 +256,16 @@ void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	hadc1 = handler1;
 	hi2s1 = handler2;
 	lcd_init();
+
+	lcd_number(666, 3, 0, 1);
+	lcd_string("ai que dlc", 1, 2);
 }
 
 void customLoop(void){
-	uint32_t buttons = 0;
+	//uint32_t buttons = 0;
 
+	adc();
+	delay(10);
 }
 
 
