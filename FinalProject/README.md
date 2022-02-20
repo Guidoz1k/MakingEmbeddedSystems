@@ -7,9 +7,9 @@ TODO LIST:
 - [x] Implement the LCD interface
 - [x] Implement the buttons functionalies
 - [x] Implement the soft-potentiometer functionalies
-- [ ] Implement the UI state machine and structures
 - [x] Implement the Timer functionalities with interruptions
 - [x] Implement the button with interruption
-- [ ] Implement the DAC functionalities with interruptions
+- [x] Implement the DAC functionalities with interruptions
 - [ ] Implement the mini DDS engine
+- [ ] Implement the UI state machine and structures
 - [ ] test
