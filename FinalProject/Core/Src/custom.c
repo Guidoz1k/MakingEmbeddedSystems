@@ -30,30 +30,6 @@
 static ADC_HandleTypeDef hadc1;
 static I2S_HandleTypeDef hi2s1;
 
-enum _buttons{
-		invalid = 0,
-		up = 1,
-		down = 2,
-		right = 3,
-		left = 4
-};
-
-enum _waveforms{
-		sine = 0,
-		square = 1,
-		triangle = 2,
-		sawtooth = 3
-};
-
-enum _octave{
-	range12 = 0,
-	range23 = 1,
-	range34 = 2,
-	range45 = 3,
-	range56 = 4,
-	range67 = 5
-};
-
 // DDS parameters
 static struct _dds{
 	uint16_t		vol1;
@@ -68,30 +44,6 @@ static struct _dds{
 
 // UI variables
 static uint8_t menu_option = 0;
-char menu[8][16] = {
-		"ch. 1 volume:   ",
-		"ch. 2 volume:   ",
-		"ch. 1 waveform: ",
-		"ch. 2 waveform: ",
-		"ch. 1 harmonics:",
-		"ch. 2 harmonics:",
-		"ch. 1 octave:   ",
-		"ch. 2 octave:   ",
-};
-char octave_menu[6][6] = {
-		"1 - 2",
-		"2 - 3",
-		"3 - 4",
-		"4 - 5",
-		"5 - 6",
-		"6 - 7",
-};
-char wave_menu[4][8] = {
-		"  sine  ",
-		" square ",
-		"triangle",
-		"sawtooth",
-};
 static uint8_t max[8] = {
 		15, 15, 3, 3, 7, 7, 5, 5
 };
@@ -312,6 +264,41 @@ static enum _buttons button_check(void){
 	return output;
 }
 
+//////////////////////////////////////////////////////////////////////// HL functions
+
+void refresh(void){
+	lcd_string(menu[menu_option], 0, 0);
+	lcd_string("                ", 1, 0);
+	lcd_number(menu_option, 1, 1, 0);
+
+	switch(menu_option){
+	case 0:
+		lcd_number(sound_config.vol1, 2, 1, 6);
+		break;
+	case 1:
+		lcd_number(sound_config.vol2, 2, 1, 6);
+		break;
+	case 2:
+		lcd_string(wave_menu[sound_config.shape1], 1, 4);
+		break;
+	case 3:
+		lcd_string(wave_menu[sound_config.shape2], 1, 4);
+		break;
+	case 4:
+		lcd_number(sound_config.harmonics1, 1, 1, 7);
+		break;
+	case 5:
+		lcd_number(sound_config.harmonics2, 1, 1, 7);
+		break;
+	case 6:
+		lcd_string(octave_menu[sound_config.octave1], 1, 5);
+		break;
+	case 7:
+		lcd_string(octave_menu[sound_config.octave2], 1, 5);
+		break;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////// main functions
 
 void customButtonInterrupt(void){
@@ -355,8 +342,7 @@ void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	delay(10);
 
 	// UI first option
-	lcd_string(menu[menu_option], 0, 0);
-	lcd_number(sound_config.vol1, 2, 1, 6);
+	refresh();
 }
 
 void customLoop(void){
@@ -366,128 +352,172 @@ void customLoop(void){
 
 	// detects UI input and adjust interface
 	if(button_pressed != 0){
-		lcd_string(menu[menu_option], 0, 0);
-		lcd_string("                ", 1, 0);
 		switch(menu_option){
-		case 0:
+		case 0:	// channel 1 volume
 			switch(button_pressed){
 			case up:
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.vol1 < max[menu_option])
+					sound_config.vol1++;
 				break;
 			case left:
+				if(sound_config.vol1 > 0)
+					sound_config.vol1--;
 				break;
 			default:
 				break;
 			}
-			lcd_number(sound_config.vol1, 2, 1, 6);
+			refresh();
 			break;
-		case 1:
+		case 1:	// channel 2 volume
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.vol2 < max[menu_option])
+					sound_config.vol2++;
 				break;
 			case left:
+				if(sound_config.vol2 > 0)
+					sound_config.vol2--;
 				break;
 			default:
 				break;
 			}
-			lcd_number(sound_config.vol2, 2, 1, 6);
+			refresh();
 			break;
-		case 2:
+		case 2:	// channel 1 waveform
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.shape1 < max[menu_option])
+					sound_config.shape1++;
 				break;
 			case left:
+				if(sound_config.shape1 > 0)
+					sound_config.shape1--;
 				break;
 			default:
 				break;
 			}
-			lcd_string(wave_menu[sound_config.shape1], 1, 4);
+			refresh();
 			break;
-		case 3:
+		case 3:	// channel 2 waveform
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.shape2 < max[menu_option])
+					sound_config.shape2++;
 				break;
 			case left:
+				if(sound_config.shape2 > 0)
+					sound_config.shape2--;
 				break;
 			default:
 				break;
 			}
-			lcd_string(wave_menu[sound_config.shape2], 1, 4);
+			refresh();
 			break;
-		case 4:
+		case 4:	// channel 1 harmonics
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.harmonics1 < max[menu_option])
+					sound_config.harmonics1++;
 				break;
 			case left:
+				if(sound_config.harmonics1 > 0)
+					sound_config.harmonics1--;
 				break;
 			default:
 				break;
 			}
-			lcd_number(sound_config.harmonics1, 1, 1, 7);
+			refresh();
 			break;
-		case 5:
+		case 5:	// channel 2 harmonics
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.harmonics2 < max[menu_option])
+					sound_config.harmonics2++;
 				break;
 			case left:
+				if(sound_config.harmonics2 > 0)
+					sound_config.harmonics2--;
 				break;
 			default:
 				break;
 			}
-			lcd_number(sound_config.harmonics2, 1, 1, 7);
+			refresh();
 			break;
-		case 6:
+		case 6:	// channel 1 octave
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
+				menu_option++;
 				break;
 			case right:
+				if(sound_config.octave1 < max[menu_option])
+					sound_config.octave1++;
 				break;
 			case left:
+				if(sound_config.octave1 > 0)
+					sound_config.octave1--;
 				break;
 			default:
 				break;
 			}
-			lcd_string(octave_menu[sound_config.octave1], 1, 5);
+			refresh();
 			break;
-		case 7:
+		case 7:	// channel 2 octave
 			switch(button_pressed){
 			case up:
+				menu_option--;
 				break;
 			case down:
 				break;
 			case right:
+				if(sound_config.octave2 < max[menu_option])
+					sound_config.octave2++;
 				break;
 			case left:
+				if(sound_config.octave2 > 0)
+					sound_config.octave2--;
 				break;
 			default:
 				break;
 			}
-			lcd_string(octave_menu[sound_config.octave2], 1, 5);
+			refresh();
 			break;
 		}
 	}

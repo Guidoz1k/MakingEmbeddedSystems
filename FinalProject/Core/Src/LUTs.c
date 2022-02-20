@@ -430,4 +430,30 @@ uint16_t LUTtri[LUT_SIZE] = {
 	 -1310,  -1245,  -1179,  -1114,  -1048,   -983,   -917,   -851,   -786,   -720,   -655,   -589,   -524,   -458,   -393,   -327,   -262,   -196,   -131,    -65
 };
 
+char menu[8][16] = {
+		"ch. 1 volume:   ",
+		"ch. 2 volume:   ",
+		"ch. 1 waveform: ",
+		"ch. 2 waveform: ",
+		"ch. 1 harmonics:",
+		"ch. 2 harmonics:",
+		"ch. 1 octave:   ",
+		"ch. 2 octave:   ",
+};
+
+char octave_menu[6][6] = {
+		"1 - 2",
+		"2 - 3",
+		"3 - 4",
+		"4 - 5",
+		"5 - 6",
+		"6 - 7",
+};
+
+char wave_menu[4][9] = {
+		"  sine  ",
+		" square ",
+		"triangle",
+		"sawtooth",
+};
 
