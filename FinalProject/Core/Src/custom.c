@@ -27,11 +27,75 @@
 
 #define BUT_K2	GPIOC,GPIO_PIN_5	// PC05 = K2 onboard button
 
-
 static ADC_HandleTypeDef hadc1;
 static I2S_HandleTypeDef hi2s1;
 
+enum _buttons{
+		invalid = 0,
+		up = 1,
+		down = 2,
+		right = 3,
+		left = 4
+};
 
+enum _waveforms{
+		sine = 0,
+		square = 1,
+		triangle = 2,
+		sawtooth = 3
+};
+
+enum _octave{
+	range12 = 0,
+	range23 = 1,
+	range34 = 2,
+	range45 = 3,
+	range56 = 4,
+	range67 = 5
+};
+
+// DDS parameters
+static struct _dds{
+	uint16_t		vol1;
+	uint16_t		vol2;
+	enum _waveforms	shape1;
+	enum _waveforms	shape2;
+	uint16_t		harmonics1;
+	uint16_t		harmonics2;
+	enum _octave	octave1;
+	enum _octave	octave2;
+} sound_config;
+
+// UI variables
+static uint8_t menu_option = 0;
+char menu[8][16] = {
+		"ch. 1 volume:   ",
+		"ch. 2 volume:   ",
+		"ch. 1 waveform: ",
+		"ch. 2 waveform: ",
+		"ch. 1 harmonics:",
+		"ch. 2 harmonics:",
+		"ch. 1 octave:   ",
+		"ch. 2 octave:   ",
+};
+char octave_menu[6][6] = {
+		"1 - 2",
+		"2 - 3",
+		"3 - 4",
+		"4 - 5",
+		"5 - 6",
+		"6 - 7",
+};
+char wave_menu[4][8] = {
+		"  sine  ",
+		" square ",
+		"triangle",
+		"sawtooth",
+};
+static uint8_t max[8] = {
+		15, 15, 3, 3, 7, 7, 5, 5
+};
+static uint16_t adc_old = 0;
 
 //////////////////////////////////////////////////////////////////////// LCD "ll" functions
 
@@ -221,6 +285,33 @@ static void i2s(uint16_t right, uint16_t left){
 
 }
 
+static enum _buttons button_check(void){
+	enum _buttons output = 0;
+	uint32_t count = 0;
+
+	if(HAL_GPIO_ReadPin(BUT_UP)){
+		count++;
+		output = up;
+	}
+	if(HAL_GPIO_ReadPin(BUT_DWN)){
+		count++;
+		output = down;
+	}
+	if(HAL_GPIO_ReadPin(BUT_RGT)){
+		count++;
+		output = right;
+	}
+	if(HAL_GPIO_ReadPin(BUT_LFT)){
+		count++;
+		output = left;
+	}
+
+	if(count > 1)
+		output = invalid;
+
+	return output;
+}
+
 //////////////////////////////////////////////////////////////////////// main functions
 
 void customButtonInterrupt(void){
@@ -252,15 +343,163 @@ void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	hi2s1 = handler2;
 	lcd_init();
 
-	adc();
-	delay(1);
-	lcd_number(tone[0], 3, 0, 1);
-	lcd_string("ai", 1, 2);
+	sound_config.vol1 = 7;
+	sound_config.vol2 = 7;
+	sound_config.shape1 = sine;
+	sound_config.shape2 = sine;
+	sound_config.harmonics1 = 0;
+	sound_config.harmonics2 = 0;
+	sound_config.octave1 = range12;
+	sound_config.octave2 = range12;
+
+	delay(10);
+
+	// UI first option
+	lcd_string(menu[menu_option], 0, 0);
+	lcd_number(sound_config.vol1, 2, 1, 6);
 }
 
 void customLoop(void){
-	//uint32_t buttons = 0;
+	// input variables
+	enum _buttons button_pressed = button_check();
+	uint16_t adc_value = adc();
 
+	// detects UI input and adjust interface
+	if(button_pressed != 0){
+		lcd_string(menu[menu_option], 0, 0);
+		lcd_string("                ", 1, 0);
+		switch(menu_option){
+		case 0:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_number(sound_config.vol1, 2, 1, 6);
+			break;
+		case 1:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_number(sound_config.vol2, 2, 1, 6);
+			break;
+		case 2:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_string(wave_menu[sound_config.shape1], 1, 4);
+			break;
+		case 3:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_string(wave_menu[sound_config.shape2], 1, 4);
+			break;
+		case 4:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_number(sound_config.harmonics1, 1, 1, 7);
+			break;
+		case 5:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_number(sound_config.harmonics2, 1, 1, 7);
+			break;
+		case 6:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_string(octave_menu[sound_config.octave1], 1, 5);
+			break;
+		case 7:
+			switch(button_pressed){
+			case up:
+				break;
+			case down:
+				break;
+			case right:
+				break;
+			case left:
+				break;
+			default:
+				break;
+			}
+			lcd_string(octave_menu[sound_config.octave2], 1, 5);
+			break;
+		}
+	}
+
+	// detect ribbon sensor input and activate voices
+	if(adc_value != adc_old){
+		adc_old = adc_value;
+		// ativar ou mudar voz
+	}
+
+	// interface loop time interval
+	delay(100);
 }
 
 
