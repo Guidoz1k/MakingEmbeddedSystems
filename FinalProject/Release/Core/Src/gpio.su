@@ -1,2 +1,2 @@
-gpio.c:37:6:MX_GPIO_Init	72	static
-gpio.c:111:6:HAL_GPIO_EXTI_Callback	8	static
+gpio.c:37:6:MX_GPIO_Init	80	static
+gpio.c:111:6:HAL_GPIO_EXTI_Callback	0	static

@@ -435,8 +435,8 @@ char menu[8][16] = {
 		"ch. 2 volume:   ",
 		"ch. 1 waveform: ",
 		"ch. 2 waveform: ",
-		//"ch. 1 harmonics:",
-		//"ch. 2 harmonics:",
+		"ch. 1 harmonics:",
+		"ch. 2 harmonics:",
 		"ch. 1 octave:   ",
 		"ch. 2 octave:   ",
 };
