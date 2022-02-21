@@ -14,10 +14,10 @@ custom.c:223:13:delay	16	static
 custom.c:228:17:adc	24	static
 custom.c:249:13:i2s	24	static
 custom.c:260:22:button_check	16	static
-custom.c:289:13:refresh	8	static
-custom.c:322:13:add_voice	16	static
-custom.c:335:13:remove_voice	16	static
-custom.c:353:6:customButtonInterrupt	4	static
-custom.c:366:6:customTimerInterrupt	16	static
-custom.c:423:6:customSetup	16	static
-custom.c:452:6:customLoop	16	static
+custom.c:290:13:refresh	8	static
+custom.c:324:13:add_voice	16	static
+custom.c:338:13:remove_voice	16	static
+custom.c:357:6:customButtonInterrupt	4	static
+custom.c:371:6:customTimerInterrupt	16	static
+custom.c:429:6:customSetup	16	static
+custom.c:458:6:customLoop	16	static

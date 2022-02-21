@@ -643,15 +643,21 @@ void customLoop(void){
 			HAL_GPIO_WritePin(LED, GPIO_PIN_RESET);
 			// will add voices according to the number of harmonics
 			for(aux = 0; aux <= sound_config.harmonics1; aux++)
-				if(adc_value > 12)
-					add_voice(tone[1 + aux][adc_value - 12], 1, aux);
+				if(adc_value > 12){
+					if((sound_config.octave1 + aux) < 5) // keep harmonics from exceeding the max f
+						add_voice(tone[sound_config.octave1 + 1 + aux][adc_value - 12], 1, aux);
+				}
 				else
-					add_voice(tone[0 + aux][adc_value], 1, aux);
+					if((sound_config.octave1 + aux) < 5) // keep harmonics from exceeding the max f
+						add_voice(tone[sound_config.octave1 + aux][adc_value], 1, aux);
 			for(aux = 0; aux <= sound_config.harmonics2; aux++)
-				if(adc_value > 12)
-					add_voice(tone[1 + aux][adc_value - 12], 2, aux);
+				if(adc_value > 12){
+					if((sound_config.octave2 + aux) < 5) // keep harmonics from exceeding the max f
+						add_voice(tone[sound_config.octave2 + 1 + aux][adc_value - 12], 2, aux);
+				}
 				else
-					add_voice(tone[0 + aux][adc_value], 2, aux);
+					if((sound_config.octave2 + aux) < 5) // keep harmonics from exceeding the max f
+						add_voice(tone[sound_config.octave2 + aux][adc_value], 2, aux);
 		}
 	}
 

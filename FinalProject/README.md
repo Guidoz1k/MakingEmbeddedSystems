@@ -14,4 +14,6 @@ TODO LIST:
 - [x] Implement the UI state machine and structures
 - [x] test
 
-The "0 final report" contains the report of the project and more details.
+The "0 final report.pdf" file contains the report of the project and more details.
+
+[Youtube demo](https://youtu.be/xsVainzHVL8)

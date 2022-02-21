@@ -7,4 +7,4 @@ custom.c:290:13:refresh	8	static
 custom.c:357:6:customButtonInterrupt	4	static
 custom.c:371:6:customTimerInterrupt	48	static
 custom.c:429:6:customSetup	16	static
-custom.c:458:6:customLoop	32	static
+custom.c:458:6:customLoop	48	static
