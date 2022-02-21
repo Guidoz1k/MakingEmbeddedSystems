@@ -13,3 +13,5 @@ TODO LIST:
 - [x] Implement the mini DDS engine
 - [x] Implement the UI state machine and structures
 - [x] test
+
+The "0 final report" contains the report of the project and more details.
