@@ -10,6 +10,6 @@ TODO LIST:
 - [x] Implement the Timer functionalities with interruptions
 - [x] Implement the button with interruption
 - [x] Implement the DAC functionalities with interruptions
-- [ ] Implement the mini DDS engine
-- [ ] Implement the UI state machine and structures
-- [ ] test
+- [x] Implement the mini DDS engine
+- [x] Implement the UI state machine and structures
+- [x] test

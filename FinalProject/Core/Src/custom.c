@@ -286,6 +286,7 @@ static enum _buttons button_check(void){
 
 //////////////////////////////////////////////////////////////////////// HL functions
 
+// refreshes the UI with updated info
 static void refresh(void){
 	lcd_string(menu[menu_option], 0, 0);
 	lcd_string("                ", 1, 0);
@@ -319,6 +320,7 @@ static void refresh(void){
 	}
 }
 
+// adds a voice to the DDS
 static void add_voice(uint16_t frequency, uint16_t channel, uint16_t harmonic){
 	switch(channel){
 	case 1:
@@ -332,6 +334,7 @@ static void add_voice(uint16_t frequency, uint16_t channel, uint16_t harmonic){
 	}
 }
 
+// removes a voice from the DDS
 static void remove_voice(uint16_t channel, uint16_t harmonic){
 	switch(channel){
 	case 1:
@@ -350,19 +353,21 @@ static void remove_voice(uint16_t channel, uint16_t harmonic){
 
 //////////////////////////////////////////////////////////////////////// main functions
 
+// button interrupt that resets the DDS
 void customButtonInterrupt(void){
 	// dds initial configuration
 	sound_config.vol1 = 7;
 	sound_config.vol2 = 7;
 	sound_config.shape1 = sine;
 	sound_config.shape2 = sine;
-	//sound_config.harmonics1 = 0;
-	//sound_config.harmonics2 = 0;
+	sound_config.harmonics1 = 0;
+	sound_config.harmonics2 = 0;
 	sound_config.octave1 = range12;
 	sound_config.octave2 = range12;
 	needs_update = 1;
 }
 
+// timer interrupt running at sampling rate
 void customTimerInterrupt(void){
 	volatile uint16_t out_l = 0;
 	volatile uint16_t out_r = 0;
@@ -420,6 +425,7 @@ void customTimerInterrupt(void){
 	HAL_GPIO_WritePin(INT_OUT, GPIO_PIN_RESET);
 }
 
+// function that runs once before entering the main loop
 void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	uint16_t aux = 0;
 
@@ -436,7 +442,6 @@ void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	sound_config.harmonics2 = 0;
 	sound_config.octave1 = range12;
 	sound_config.octave2 = range12;
-
 	for(aux = 0; aux <= MAX_HARM; aux++){
 		counter1[aux] = 0;
 		counter2[aux] = 0;
@@ -449,6 +454,7 @@ void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
 	refresh();
 }
 
+// main loop
 void customLoop(void){
 	// input variables
 	enum _buttons button_pressed = button_check();
@@ -626,15 +632,16 @@ void customLoop(void){
 	// detect ribbon sensor input and activate voices
 	if(adc_value != adc_old){
 		adc_old = adc_value;
-		if(adc_value == 0){
+		if(adc_value == 0){ // ribbon sensor released
 			HAL_GPIO_WritePin(LED, GPIO_PIN_SET);
 			for(aux = 0; aux <= sound_config.harmonics1; aux++)
 				remove_voice(1, aux);
 			for(aux = 0; aux <= sound_config.harmonics2; aux++)
 				remove_voice(2, aux);
 		}
-		else{
+		else{ // needs to update the frequency
 			HAL_GPIO_WritePin(LED, GPIO_PIN_RESET);
+			// will add voices according to the number of harmonics
 			for(aux = 0; aux <= sound_config.harmonics1; aux++)
 				if(adc_value > 12)
 					add_voice(tone[1 + aux][adc_value - 12], 1, aux);
@@ -651,6 +658,43 @@ void customLoop(void){
 	// interface loop time interval
 	delay(100);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
