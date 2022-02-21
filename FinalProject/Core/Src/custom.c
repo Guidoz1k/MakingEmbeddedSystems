@@ -26,6 +26,7 @@
 #define	BUT_LFT	GPIOE,GPIO_PIN_5	// PE05 = LEFT button
 
 #define BUT_K2	GPIOC,GPIO_PIN_5	// PC05 = K2 onboard button
+#define INT_OUT	GPIOB,GPIO_PIN_5	// PC05 = K2 onboard button
 
 static ADC_HandleTypeDef hadc1;
 static I2S_HandleTypeDef hi2s1;
@@ -36,16 +37,23 @@ static struct _dds{
 	uint16_t		vol2;
 	enum _waveforms	shape1;
 	enum _waveforms	shape2;
-	uint16_t		harmonics1;
-	uint16_t		harmonics2;
+	//uint16_t		harmonics1;
+	//uint16_t		harmonics2;
 	enum _octave	octave1;
 	enum _octave	octave2;
 } sound_config;
+static uint32_t increment1 = 0;
+static uint32_t increment2 = 0;
+static uint32_t counter1 = 0;
+static uint32_t counter2 = 0;
+static uint32_t bigmax = LUT_SIZE << 10;
 
 // UI variables
 static uint8_t menu_option = 0;
-static uint8_t max[8] = {
-		15, 15, 3, 3, 7, 7, 5, 5
+static uint8_t max[6] = {
+		16, 16, // max volume 0 - 16
+		 3,  3, // max shape 0 - 3
+		 5,  5  // max octaves
 };
 static uint16_t adc_old = 0;
 
@@ -224,6 +232,9 @@ static uint32_t adc(){
 	value /= (average * 2420);	// value ranges from 27 to 2
 	value -= 2;					// value ranges from 25 to 0
 
+	if(value < 0)
+		value = 0;
+
 	return value;
 }
 
@@ -266,7 +277,7 @@ static enum _buttons button_check(void){
 
 //////////////////////////////////////////////////////////////////////// HL functions
 
-void refresh(void){
+static void refresh(void){
 	lcd_string(menu[menu_option], 0, 0);
 	lcd_string("                ", 1, 0);
 	lcd_number(menu_option, 1, 1, 0);
@@ -284,63 +295,126 @@ void refresh(void){
 	case 3:
 		lcd_string(wave_menu[sound_config.shape2], 1, 4);
 		break;
+	/*
 	case 4:
 		lcd_number(sound_config.harmonics1, 1, 1, 7);
 		break;
 	case 5:
 		lcd_number(sound_config.harmonics2, 1, 1, 7);
 		break;
-	case 6:
+	*/
+	case 4:
 		lcd_string(octave_menu[sound_config.octave1], 1, 5);
 		break;
-	case 7:
+	case 5:
 		lcd_string(octave_menu[sound_config.octave2], 1, 5);
 		break;
 	}
 }
 
+static void add_voice(uint16_t frequency, uint16_t channel){
+	switch(channel){
+	case 1:
+		increment1 = frequency * 512 / 5;
+		break;
+	case 2:
+		increment2 = frequency * 512 / 5;
+		break;
+	default:
+		break;
+	}
+}
+
+static void remove_voice(uint16_t channel){
+	switch(channel){
+	case 1:
+		increment1 = 0;
+		counter1 = 0;
+		break;
+	case 2:
+		increment2 = 0;
+		counter2 = 0;
+		break;
+	default:
+		break;
+	}
+}
+
+
 //////////////////////////////////////////////////////////////////////// main functions
 
 void customButtonInterrupt(void){
-	static uint32_t state = 0;
-
-	HAL_GPIO_WritePin(LED, state);
-	state ^= 1;
 
 }
 
 void customTimerInterrupt(void){
-	static uint32_t counter1 = 0;
-	static uint32_t counter2 = 0;
+	volatile uint16_t out_l = 0;
+	volatile uint16_t out_r = 0;
 
-	i2s(LUTsine[counter1], LUTsquare[counter2]);
+	HAL_GPIO_WritePin(INT_OUT, GPIO_PIN_SET);
 
-	counter1++;
-	if(counter1 == LUT_SIZE)
-		counter1 = 0;
-	counter2++;
-	if(counter2 == LUT_SIZE)
-		counter2 = 0;
+	// left channel
+	counter1 += increment1;
+	if(counter1 >= bigmax)
+		counter1 -= bigmax;
+	switch(sound_config.shape1){
+	case sine:
+		out_l = (uint16_t)((int16_t)LUTsine[counter1 >> 10] * sound_config.vol1 / 16);
+		break;
+	case square:
+		out_l = (uint16_t)((int16_t)LUTsquare[counter1 >> 10] * sound_config.vol1 / 16);
+		break;
+	case triangle:
+		out_l = (uint16_t)((int16_t)LUTtri[counter1 >> 10] * sound_config.vol1 / 16);
+		break;
+	case sawtooth:
+		out_l = (uint16_t)((int16_t)LUTsaw[counter1 >> 10] * sound_config.vol1 / 16);
+		break;
+	default:
+		break;
+	}
+
+	// right channel
+	counter2 += increment2;
+	if(counter2 >= bigmax)
+		counter2 -= bigmax;
+	switch(sound_config.shape2){
+	case sine:
+		out_r = (uint16_t)((int16_t)LUTsine[counter2 >> 10] * sound_config.vol2 / 16);
+		break;
+	case square:
+		out_r = (uint16_t)((int16_t)LUTsquare[counter2 >> 10] * sound_config.vol2 / 16);
+		break;
+	case triangle:
+		out_r = (uint16_t)((int16_t)LUTtri[counter2 >> 10] * sound_config.vol2 / 16);
+		break;
+	case sawtooth:
+		out_r = (uint16_t)((int16_t)LUTsaw[counter2 >> 10] * sound_config.vol2 / 16);
+		break;
+	default:
+		break;
+	}
+
+	i2s(out_l, out_r);
+	HAL_GPIO_WritePin(INT_OUT, GPIO_PIN_RESET);
 }
 
 void customSetup(ADC_HandleTypeDef handler1, I2S_HandleTypeDef handler2){
-	//uint8_t aux = 0;
-
 	hadc1 = handler1;
 	hi2s1 = handler2;
 	lcd_init();
 
+	// dds initial configuration
 	sound_config.vol1 = 7;
 	sound_config.vol2 = 7;
 	sound_config.shape1 = sine;
 	sound_config.shape2 = sine;
-	sound_config.harmonics1 = 0;
-	sound_config.harmonics2 = 0;
+	//sound_config.harmonics1 = 0;
+	//sound_config.harmonics2 = 0;
 	sound_config.octave1 = range12;
 	sound_config.octave2 = range12;
 
 	delay(10);
-
 	// UI first option
 	refresh();
 }
@@ -436,6 +510,7 @@ void customLoop(void){
 			}
 			refresh();
 			break;
+		/*
 		case 4:	// channel 1 harmonics
 			switch(button_pressed){
 			case up:
@@ -478,7 +553,8 @@ void customLoop(void){
 			}
 			refresh();
 			break;
-		case 6:	// channel 1 octave
+		*/
+		case 4:	// channel 1 octave
 			switch(button_pressed){
 			case up:
 				menu_option--;
@@ -499,7 +575,7 @@ void customLoop(void){
 			}
 			refresh();
 			break;
-		case 7:	// channel 2 octave
+		case 5:	// channel 2 octave
 			switch(button_pressed){
 			case up:
 				menu_option--;
@@ -525,7 +601,22 @@ void customLoop(void){
 	// detect ribbon sensor input and activate voices
 	if(adc_value != adc_old){
 		adc_old = adc_value;
-		// ativar ou mudar voz
+		if(adc_value == 0){
+			HAL_GPIO_WritePin(LED, GPIO_PIN_SET);
+			remove_voice(1);
+			remove_voice(2);
+		}
+		else{
+			HAL_GPIO_WritePin(LED, GPIO_PIN_RESET);
+			if(adc_value > 12){
+				add_voice(tone[1 + sound_config.octave1][adc_value - 12], 1);
+				add_voice(tone[1 + sound_config.octave2][adc_value - 12], 2);
+			}
+			else{
+				add_voice(tone[0 + sound_config.octave1][adc_value], 1);
+				add_voice(tone[0 + sound_config.octave2][adc_value], 2);
+			}
+		}
 	}
 
 	// interface loop time interval

@@ -6,19 +6,19 @@
 #define LUT_SIZE	2000
 
 // 88 keys of a piano
-uint32_t tone[88];
+uint32_t tone[8][12];
 
 // sine LUT
-uint16_t LUTsine[LUT_SIZE];
+volatile uint16_t LUTsine[LUT_SIZE];
 
 // square LUT
-uint16_t LUTsquare[LUT_SIZE];
+volatile uint16_t LUTsquare[LUT_SIZE];
 
 // sawtooth LUT
-uint16_t LUTsaw[LUT_SIZE];
+volatile uint16_t LUTsaw[LUT_SIZE];
 
 // sawtooth LUT
-uint16_t LUTtri[LUT_SIZE];
+volatile uint16_t LUTtri[LUT_SIZE];
 
 char menu[8][16];
 
